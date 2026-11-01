@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">AutoPowerOff</string>
+    <string name="accessibility_service_name">AutoPowerOff Assistant</string>
+    <string name="accessibility_service_description">AutoPowerOff uses this accessibility service exclusively to perform system lock screen actions and display the native power menu when device inactivity is detected.</string>
+    <string name="notification_channel_name">AutoPowerOff Monitoring</string>
+    <string name="notification_channel_desc">Shows ongoing device inactivity tracking and current timer status.</string>
+    <string name="warning_channel_name">AutoPowerOff Warning</string>
+    <string name="warning_channel_desc">Alerts you with sound/vibration before powering off or locking the device.</string>
+    <string name="cancel_auto_off">Cancel Auto-Off</string>
+    <string name="service_running_title">AutoPowerOff Active</string>
+    <string name="service_running_idle">Monitoring idle inactivity…</string>
+    <string name="service_paused_charging">Paused: Device is charging</string>
+    <string name="warning_notification_title">Device Inactive - Shutting Down Soon</string>
+</resources>
