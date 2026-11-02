@@ -87,7 +87,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    viewModel: MainScreenViewModel = viewModel()
+    viewModel: MainScreenViewModel = viewModel(factory = MainScreenViewModel.Factory)
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current

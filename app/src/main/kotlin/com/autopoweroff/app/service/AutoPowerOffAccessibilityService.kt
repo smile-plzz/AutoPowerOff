@@ -83,22 +83,31 @@ class AutoPowerOffAccessibilityService : AccessibilityService() {
          * Checks whether the user has enabled this Accessibility Service in Android Settings.
          */
         fun isAccessibilitySettingsEnabled(context: Context): Boolean {
-            val expectedComponentName = "${context.packageName}/${AutoPowerOffAccessibilityService::class.java.canonicalName}"
-            val enabledServicesSetting = Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-            ) ?: return false
+            return try {
+                val expectedFullName = "${context.packageName}/${AutoPowerOffAccessibilityService::class.java.canonicalName}"
+                val expectedShortName = "${context.packageName}/.service.AutoPowerOffAccessibilityService"
+                val enabledServicesSetting = Settings.Secure.getString(
+                    context.contentResolver,
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                ) ?: return false
 
-            val colonSplitter = TextUtils.SimpleStringSplitter(':')
-            colonSplitter.setString(enabledServicesSetting)
+                val colonSplitter = TextUtils.SimpleStringSplitter(':')
+                colonSplitter.setString(enabledServicesSetting)
 
-            while (colonSplitter.hasNext()) {
-                val componentName = colonSplitter.next()
-                if (componentName.equals(expectedComponentName, ignoreCase = true)) {
-                    return true
+                while (colonSplitter.hasNext()) {
+                    val componentName = colonSplitter.next()
+                    if (componentName.equals(expectedFullName, ignoreCase = true) ||
+                        componentName.equals(expectedShortName, ignoreCase = true) ||
+                        (componentName.contains(context.packageName) && componentName.contains("AutoPowerOffAccessibilityService"))
+                    ) {
+                        return true
+                    }
                 }
+                false
+            } catch (e: Throwable) {
+                Log.w(TAG, "Failed to check enabled accessibility services", e)
+                false
             }
-            return false
         }
 
         /**

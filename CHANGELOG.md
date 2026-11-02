@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-11-02
+### Fixed
+- Fixed fatal crash on launch caused by missing `MainScreenViewModel(Application)` constructor in compiled bytecode: added `@JvmOverloads` and explicit `ViewModelProvider.Factory`.
+- Simplified `MainActivity` root composition to directly render `MainScreen()`, eliminating Navigation3 initialization failure risks.
+- Fixed `AutoPowerOffAccessibilityService` manifest binding configuration by setting `android:exported="true"`.
+- Added defensive exception handling across system service queries, battery status receivers, and root checks.
+
 ## [1.0.0] - 2026-11-02
 ### Added
 - Complete implementation of `AutoPowerOff` Android application.

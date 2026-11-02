@@ -4,7 +4,10 @@ import android.app.Application
 import android.content.Context
 import android.os.PowerManager
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.autopoweroff.app.data.AppSettings
 import com.autopoweroff.app.data.DefaultSettingsRepository
 import com.autopoweroff.app.data.PowerOffMode
@@ -36,20 +39,32 @@ interface PermissionHelper {
 
 class DefaultPermissionHelper(private val context: Context) : PermissionHelper {
     override fun isAccessibilityGranted(): Boolean {
-        return AutoPowerOffAccessibilityService.isAccessibilitySettingsEnabled(context)
+        return try {
+            AutoPowerOffAccessibilityService.isAccessibilitySettingsEnabled(context)
+        } catch (t: Throwable) {
+            false
+        }
     }
 
     override fun isIgnoringBatteryOptimizations(): Boolean {
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
-        return powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: false
+        return try {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: false
+        } catch (t: Throwable) {
+            false
+        }
     }
 
     override suspend fun isRootAvailable(): Boolean {
-        return RootExecutor.isRootAvailable()
+        return try {
+            RootExecutor.isRootAvailable()
+        } catch (t: Throwable) {
+            false
+        }
     }
 }
 
-class MainScreenViewModel(
+class MainScreenViewModel @JvmOverloads constructor(
     application: Application,
     private val settingsRepository: SettingsRepository = DefaultSettingsRepository.getInstance(application),
     private val permissionHelper: PermissionHelper = DefaultPermissionHelper(application)
@@ -141,6 +156,15 @@ class MainScreenViewModel(
     private fun emitMessage(message: UiMessage) {
         viewModelScope.launch {
             _uiEvents.emit(message)
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as Application)
+                MainScreenViewModel(application)
+            }
         }
     }
 }

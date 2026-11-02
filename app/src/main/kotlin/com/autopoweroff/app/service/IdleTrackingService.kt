@@ -162,12 +162,16 @@ class IdleTrackingService : Service() {
     }
 
     private fun initializeInitialState() {
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        isScreenOff = !powerManager.isInteractive
+        try {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+            isScreenOff = powerManager?.isInteractive == false
 
-        val batteryStatus: Intent? = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-        isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+            val batteryStatus: Intent? = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val status = batteryStatus?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+        } catch (t: Throwable) {
+            Log.w(TAG, "Error initializing initial state", t)
+        }
     }
 
     private fun registerSystemReceivers() {

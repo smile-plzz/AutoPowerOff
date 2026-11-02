@@ -27,8 +27,12 @@ object RootExecutor {
             "/data/local/su"
         )
         for (path in paths) {
-            if (File(path).exists()) {
-                return true
+            try {
+                if (File(path).exists()) {
+                    return true
+                }
+            } catch (t: Throwable) {
+                // Ignore security exceptions on restricted paths
             }
         }
 
@@ -40,7 +44,7 @@ object RootExecutor {
             reader.close()
             process.waitFor()
             !line.isNullOrBlank()
-        } catch (e: Exception) {
+        } catch (t: Throwable) {
             false
         }
     }

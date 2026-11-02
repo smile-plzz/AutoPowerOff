@@ -42,3 +42,21 @@
      - Build verification: `./gradlew test assembleDebug` completed successfully with exit code 0.
      - Output APK: `app/build/outputs/apk/debug/app-debug.apk` (18.9 MB).
 - **Status**: Completed and fully verified.
+
+
+## [2026-11-02 15:15:00 +06:00] - Launch Crash Triage and Fix
+- **Issue**: App crashed immediately upon launch when tested on physical device.
+- **Root Cause Analysis**:
+  1. `MainScreenViewModel` had default constructor parameters without `@JvmOverloads`. In Java bytecode, no single-argument `MainScreenViewModel(Application)` constructor existed. When `MainScreen` invoked `viewModel()`, `AndroidViewModelFactory` failed with `NoSuchMethodException` trying to instantiate `MainScreenViewModel(Application)`.
+  2. `MainActivity` launched through experimental Navigation3 `rememberNavBackStack(Main)`, creating unnecessary runtime serialization overhead for a single-screen app.
+  3. `AutoPowerOffAccessibilityService` in `AndroidManifest.xml` had `android:exported="false"`. Android requires accessibility services to have `android:exported="true"` (protected by `BIND_ACCESSIBILITY_SERVICE`) so the system framework can bind to it.
+  4. Security checks and permission queries lacked defensive error handling against OEM-specific security restrictions.
+- **Fixes Applied**:
+  1. Added `@JvmOverloads` to `MainScreenViewModel` constructor and exposed explicit `MainScreenViewModel.Factory` (`ViewModelProvider.Factory`).
+  2. Direct `MainScreen()` rendering in `MainActivity.kt`, removing unused Navigation3 wrappers.
+  3. Set `android:exported="true"` and `android:label` on `AutoPowerOffAccessibilityService`.
+  4. Wrapped `isAccessibilitySettingsEnabled`, `isIgnoringBatteryOptimizations`, `RootExecutor.isRootAvailable`, and `initializeInitialState` in safe `try/catch` blocks.
+- **Verification**:
+  - Bytecode verified via `javap`: `MainScreenViewModel(Application)` constructor present.
+  - All unit tests passed (`./gradlew test`).
+  - Debug APK rebuilt successfully: `app/build/outputs/apk/debug/app-debug.apk`.
